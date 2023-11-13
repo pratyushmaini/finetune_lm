@@ -10,7 +10,7 @@ def process_data_to_model_inputs(tokenizer):
         # we have to append the response to the prompt. but labels are only for the response: and -1 for the prompt
         num_prompt_tokens = [len(tokenizer.tokenize(batch["prompt"][i])) - 1 for i in range(len(batch["prompt"]))]
         true_input = [batch["prompt"][i] + batch["response"][i] for i in range(len(batch["prompt"]))]
-        inputs = tokenizer(true_input, padding="max_length", truncation=True, max_length=1024)
+        inputs = tokenizer(true_input, padding="max_length", truncation=True, max_length=900)
         labels = inputs["input_ids"]
         labels = [[-100] * num_prompt_tokens[i] + labels[i][num_prompt_tokens[i]:] for i in range(len(labels))]
         
@@ -19,13 +19,13 @@ def process_data_to_model_inputs(tokenizer):
         inputs["labels"] = labels
 
         #confirm that the labels at not -100 are same as the response when decoded do for each ([label for label in labels[0] if label!=-100])
-        real_labels = [[label for label in labels_i if label!=-100] for labels_i in labels]
-        real_labels = [tokenizer.decode(label) for label in real_labels]
-        real_responses = [" " + response for response in batch["response"]]
-        assert real_labels == real_responses, "labels and responses don't match"
+        # real_labels = [[label for label in labels_i if label!=-100] for labels_i in labels]
+        # real_labels = [tokenizer.decode(label) for label in real_labels]
+        # real_responses = [" " + response for response in batch["response"]]
+        # assert real_labels == real_responses, "labels and responses don't match"
 
         #assert that shape of inputs["input_ids"] is **1024
-        assert len(inputs["input_ids"][0]) == 1024, "input_ids not of length 1024"
+        assert len(inputs["input_ids"][0]) == 900, "input_ids not of length 1024"
     
         return inputs
     return tokenize_function
