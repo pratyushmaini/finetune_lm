@@ -109,7 +109,7 @@ if __name__ == "__main__":
     path = "gpt2-medium"
     import sys
     dataset = sys.argv[1]
-    path = f"models/{dataset}/checkpoint-4055"
+    # path = f"models/{dataset}/"
     model_accuracy = evaluate_mcq(path, f"datasets/{dataset}/val.jsonl")
     print(f"Model Accuracy: {model_accuracy}")
 
