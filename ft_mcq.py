@@ -10,13 +10,22 @@ def process_data_to_model_inputs(tokenizer):
         # we have to append the response to the prompt. but labels are only for the response: and -1 for the prompt
         num_prompt_tokens = [len(tokenizer.tokenize(batch["prompt"][i])) - 1 for i in range(len(batch["prompt"]))]
         true_input = [batch["prompt"][i] + batch["response"][i] for i in range(len(batch["prompt"]))]
-        inputs = tokenizer(true_input, padding="max_length", truncation=True)
+        inputs = tokenizer(true_input, padding="max_length", truncation=True, max_length=1024)
         labels = inputs["input_ids"]
         labels = [[-100] * num_prompt_tokens[i] + labels[i][num_prompt_tokens[i]:] for i in range(len(labels))]
         
         # change labels to -100 wherever we have padding
         labels = [[-100 if token == tokenizer.pad_token_id else token for token in label] for label in labels]
         inputs["labels"] = labels
+
+        #confirm that the labels at not -100 are same as the response when decoded do for each ([label for label in labels[0] if label!=-100])
+        real_labels = [[label for label in labels_i if label!=-100] for labels_i in labels]
+        real_labels = [tokenizer.decode(label) for label in real_labels]
+        real_responses = [" " + response for response in batch["response"]]
+        assert real_labels == real_responses, "labels and responses don't match"
+
+        #assert that shape of inputs["input_ids"] is **1024
+        assert len(inputs["input_ids"][0]) == 1024, "input_ids not of length 1024"
     
         return inputs
     return tokenize_function
@@ -36,7 +45,7 @@ def load_data(file_path):
     return processed_data
 
 def my_trainer(args):
-    file_path = f"/home/pratyus2/scratch/projects/finetune_lm/datasets/{args.dataset}/train.jsonl"
+    file_path = f"datasets/{args.dataset}/train.jsonl"
     raw_data = load_data(file_path)
     dataset = Dataset.from_dict(raw_data)
 
@@ -59,7 +68,7 @@ def my_trainer(args):
     warmup_steps = num_steps // args.warmup_ratio
 
     #output log and save dir paths
-    output_dir = f"./{args.dataset}"
+    output_dir = f"models/{args.dataset}"
 
 
     # Training arguments

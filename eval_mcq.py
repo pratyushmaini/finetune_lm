@@ -37,7 +37,7 @@ def read_jsonl(data_path):
     with open(data_path, 'r', encoding='utf-8') as file:
         return [json.loads(line) for line in file]
 
-def get_model_predictions(model, tokenizer, formatted_questions):
+def get_model_predictions(model, tokenizer, formatted_questions, num_question_tokens):
     inputs = tokenizer(formatted_questions, padding=True, return_tensors='pt')
     with torch.no_grad():
         inputs = {k: v.cuda() for k, v in inputs.items()}
@@ -46,10 +46,17 @@ def get_model_predictions(model, tokenizer, formatted_questions):
     # get loss and normalized loss (loss divided by length of input) for each question
     shifted_logits = outputs.logits[..., :-1, :].contiguous()
     labels = inputs['input_ids'][:, 1:].contiguous()
-    loss_fct = torch.nn.CrossEntropyLoss(reduction='none')
+    loss_fct = torch.nn.CrossEntropyLoss(reduction='none', ignore_index=-100)
+
+    #set the labels to -100 where the input is padding or is a part of the question
+    labels[labels == tokenizer.pad_token_id] = -100
+    for i in range(len(num_question_tokens)):
+        labels[i, :num_question_tokens[i]] = -100
+
     losses = loss_fct(shifted_logits.view(-1, shifted_logits.size(-1)), labels.view(-1))
-    normalized_losses = losses.view(-1, inputs['input_ids'].size(1) - 1).mean(-1)
     losses = losses.view(-1, inputs['input_ids'].size(1) - 1).sum(-1)
+    #divide by number of non -100 labels
+    normalized_losses = losses / (labels != -100).sum(-1).float()
     return normalized_losses, losses
 
 
@@ -62,16 +69,19 @@ def evaluate_mcq(model_path, data_path, batch_size = 32):
     for i in range(0, len(questions), batch_size):
         question_batch = questions[i:i+batch_size]
         formatted_questions_batch = []
+        num_question_tokens = []
         #assert number of choices is same for all questions
         for question in question_batch:
             mc_data = multiple_choice(question)
             formatted_questions = [
                 mc_data['prompt'] + question['choices'][i] for i in range(len(question['choices']))
             ]
+            num_question_tokens.append(len(tokenizer.tokenize(mc_data['prompt'])) - 1)
             formatted_questions_batch += formatted_questions
-        normalized_losses, losses = get_model_predictions(model, tokenizer, formatted_questions_batch)
+        normalized_losses, losses = get_model_predictions(model, tokenizer, formatted_questions_batch, num_question_tokens)
         
         num_choices_seen = 0
+        # import ipdb; ipdb.set_trace()
         for question in question_batch:
             choices_in_question = len(question['choices'])
             normalized_loss = normalized_losses[num_choices_seen:num_choices_seen+choices_in_question]
@@ -99,7 +109,7 @@ if __name__ == "__main__":
     path = "gpt2-medium"
     import sys
     dataset = sys.argv[1]
-    path = f"/home/pratyus2/scratch/projects/finetune_lm/{dataset}"
-    model_accuracy = evaluate_mcq(path, f"/home/pratyus2/scratch/projects/finetune_lm/datasets/{dataset}/train.jsonl")
+    path = f"models/{dataset}/checkpoint-4055"
+    model_accuracy = evaluate_mcq(path, f"datasets/{dataset}/val.jsonl")
     print(f"Model Accuracy: {model_accuracy}")
 
