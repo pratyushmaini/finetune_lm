@@ -4,28 +4,28 @@ This repository contains code to finetune large language models (GPT-2) on Q/A t
 
 ### Installation
 
-```bash install.sh```
+``bash install.sh``
 
 ### Usage
 
-```python ft_mcq.py --help```
+``python ft_mcq.py --help``
 
 ### Example
 
-```python ft_mcq.py --model_type gpt2 --model_name_or_path gpt2 --do_train --train_data_file data/mcq/train.txt --do_eval --eval_data_file data/mcq/valid.txt --per_gpu_train_batch_size 1 --per_gpu_eval_batch_size 1 --learning_rate 5e-5 --num_train_epochs 3.0 --max_seq_length 512 --output_dir output/mcq/```
+``python ft_mcq.py --model_type gpt2 --model_name_or_path gpt2 --do_train --train_data_file data/mcq/train.txt --do_eval --eval_data_file data/mcq/valid.txt --per_gpu_train_batch_size 1 --per_gpu_eval_batch_size 1 --learning_rate 5e-5 --num_train_epochs 3.0 --max_seq_length 512 --output_dir output/mcq/``
 
 ### Data
 
 The data is in the following format:
 
-```{"choices": ["Pour it onto a plate", "Pour it into a jar"], "query": "Question: When boiling butter, when it's ready, you can\n", "gold": 1}```
+``{"choices": ["Pour it onto a plate", "Pour it into a jar"], "query": "Question: When boiling butter, when it's ready, you can\n", "gold": 1}``
 
 Pre-processed datasets are available in the data folder `datasets`
 
 
 ### Evaluation
 
-```python eval_mcq.py --model_type gpt2 --model_name_or_path output/mcq/ --eval_data_file data/mcq/test.txt --per_gpu_eval_batch_size 1 --max_seq_length 512 --output_dir output/mcq/```
+``python eval_mcq.py --model_type gpt2 --model_name_or_path output/mcq/ --eval_data_file data/mcq/test.txt --per_gpu_eval_batch_size 1 --max_seq_length 512 --output_dir output/mcq/``
 
 ### Why another repo?
 
