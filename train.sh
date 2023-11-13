@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=0,1,3 composer train.py /home/pratyus2/scratch/projects/llm-foundry/scripts/train/finetune_example/gpt2-piqa.yaml
