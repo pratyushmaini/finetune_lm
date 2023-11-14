@@ -76,7 +76,7 @@ def my_trainer(args):
     #output log and save dir paths
     if args.save_dir is None:
         args.save_dir = args.dataset
-    output_dir = f"models/{args.save_dir}
+    output_dir = f"models/{args.save_dir}"
 
     print(f"Output dir: {output_dir}")
 
