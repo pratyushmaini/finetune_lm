@@ -3,7 +3,7 @@ from composer import *
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 from tqdm import tqdm
-
+from params import parse_args
 
 
 def load_model(model_path):
@@ -101,10 +101,14 @@ def evaluate_mcq(model_path, data_path, batch_size = 32):
 
 
 if __name__ == "__main__":
-    path = "gpt2-medium"
-    import sys
-    dataset = sys.argv[1]
-    path = f"models/{dataset}"
-    model_accuracy = evaluate_mcq(path, f"datasets/{dataset}/train.jsonl")
-    print(f"Model Accuracy: {model_accuracy}")
+    args = parse_args().parse_args()
+    dataset = args.dataset
+    path = args.model_path
+
+    if args.do_train_eval:
+        model_accuracy = evaluate_mcq(path, f"datasets/{dataset}/train.jsonl")
+        print(f"Model Accuracy on Train: {model_accuracy}")
+    
+    model_accuracy = evaluate_mcq(path, f"datasets/{dataset}/val.jsonl")
+    print(f"Model Accuracy on Val: {model_accuracy}")
 
