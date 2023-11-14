@@ -107,9 +107,9 @@ if __name__ == "__main__":
     data_composer  = composer_dict[dataset]
 
     if args.do_train_eval:
-        model_accuracy = evaluate_mcq(path, f"datasets/{dataset}/train.jsonl", batch_size=args.total_batch_size)
+        model_accuracy = evaluate_mcq(path, f"datasets/{dataset}/train.jsonl", data_composer, batch_size=args.total_batch_size)
         print(f"Model Accuracy on Train: {model_accuracy}")
     
-    model_accuracy = evaluate_mcq(path, f"datasets/{dataset}/val.jsonl", batch_size=args.total_batch_size)
+    model_accuracy = evaluate_mcq(path, f"datasets/{dataset}/val.jsonl", data_composer, batch_size=args.total_batch_size)
     print(f"Model Accuracy on Val: {model_accuracy}")
 
