@@ -50,6 +50,8 @@ def my_trainer(args):
     raw_data = load_data(file_path, data_composer)
     dataset = Dataset.from_dict(raw_data)
 
+    val_dataset = Dataset.from_dict(load_data(f"datasets/{args.dataset}/val.jsonl", data_composer))
+
     # Load tokenizer and model
     tokenizer = AutoTokenizer.from_pretrained(args.model_path)
     model = AutoModelForCausalLM.from_pretrained(args.model_path).cuda()
@@ -58,6 +60,7 @@ def my_trainer(args):
 
     # Tokenize dataset
     tokenized_dataset = dataset.map(process_data_to_model_inputs(tokenizer), batched=True)
+    tokenized_val_dataset = val_dataset.map(process_data_to_model_inputs(tokenizer), batched=True)
 
     num_devices = torch.cuda.device_count()
     assert args.total_batch_size % num_devices == 0, "Batch size not divisible by number of devices"
@@ -67,11 +70,13 @@ def my_trainer(args):
     num_steps = len(tokenized_dataset) // args.total_batch_size * args.num_epochs
     save_steps = num_steps // args.num_save_steps
     warmup_steps = int(num_steps * args.warmup_ratio)
+    eval_steps = save_steps//5
 
     print(f"Total number of steps: {num_steps}")
     print(f"Save steps: {save_steps}")
     print(f"Warmup steps: {warmup_steps}")
     print(f"Logging steps: {args.logging_steps}")
+    print(f"Eval steps: {eval_steps}")
 
     #output log and save dir paths
     if args.save_dir is None:
@@ -95,7 +100,11 @@ def my_trainer(args):
         report_to=args.report_to,
         save_strategy=args.save_strategy,
         save_steps=save_steps,
-
+        eval_steps=eval_steps,
+        eval_accumulation_steps=gradient_accumulation_steps,
+        do_train=1,
+        do_eval=1,
+        evaluation_strategy="steps",
     )
 
     # Initialize Trainer
@@ -103,7 +112,9 @@ def my_trainer(args):
         model=model,
         args=training_args,
         train_dataset=tokenized_dataset,
+        eval_dataset=tokenized_val_dataset,
     )
+
 
     # Train the model
     trainer.train()
