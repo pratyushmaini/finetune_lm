@@ -27,6 +27,8 @@ def process_data_to_model_inputs(tokenizer):
 
         #assert that shape of inputs["input_ids"] is **1024
         assert len(inputs["input_ids"][0]) == 1024, "input_ids not of length 1024"
+
+        # import ipdb; ipdb.set_trace()
     
         return inputs
     return tokenize_function
@@ -45,7 +47,7 @@ def load_data(file_path, data_composer):
     return processed_data
 
 def my_trainer(args):
-    file_path = f"datasets/{args.dataset}/train.jsonl"
+    file_path = f"datasets/{args.dataset}/train_debug.jsonl"
     data_composer = composer_dict[args.dataset]
     raw_data = load_data(file_path, data_composer)
     dataset = Dataset.from_dict(raw_data)
@@ -61,6 +63,9 @@ def my_trainer(args):
     # Tokenize dataset
     tokenized_dataset = dataset.map(process_data_to_model_inputs(tokenizer), batched=True)
     tokenized_val_dataset = val_dataset.map(process_data_to_model_inputs(tokenizer), batched=True)
+
+    #take only first 100 examples from validation set
+    tokenized_val_dataset = tokenized_val_dataset.select(range(100))
 
     num_devices = torch.cuda.device_count()
     assert args.total_batch_size % num_devices == 0, "Batch size not divisible by number of devices"
