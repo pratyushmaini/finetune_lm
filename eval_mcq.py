@@ -50,7 +50,7 @@ def get_model_predictions(model, tokenizer, formatted_questions, num_question_to
 
 
 
-def evaluate_mcq(model_path, data_path, batch_size = 32):
+def evaluate_mcq(model_path, data_path, data_composer, batch_size = 32):
     model, tokenizer = load_model(model_path)
     questions = read_jsonl(data_path)
     correct = 0; correct_normalized = 0
@@ -61,7 +61,7 @@ def evaluate_mcq(model_path, data_path, batch_size = 32):
         num_question_tokens_batch = []
         #assert number of choices is same for all questions
         for question in question_batch:
-            mc_data = multiple_choice(question)
+            mc_data = data_composer(question)
             formatted_questions = [
                 mc_data['prompt'] + question['choices'][i] for i in range(len(question['choices']))
             ]
@@ -104,6 +104,7 @@ if __name__ == "__main__":
     args = parse_args().parse_args()
     dataset = args.dataset
     path = args.model_path
+    data_composer  = composer_dict[dataset]
 
     if args.do_train_eval:
         model_accuracy = evaluate_mcq(path, f"datasets/{dataset}/train.jsonl", batch_size=args.total_batch_size)
