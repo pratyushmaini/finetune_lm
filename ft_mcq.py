@@ -47,7 +47,7 @@ def load_data(file_path, data_composer):
     return processed_data
 
 def my_trainer(args):
-    file_path = f"datasets/{args.dataset}/train_debug.jsonl"
+    file_path = f"datasets/{args.dataset}/train.jsonl"
     data_composer = composer_dict[args.dataset]
     raw_data = load_data(file_path, data_composer)
     dataset = Dataset.from_dict(raw_data)
