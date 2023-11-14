@@ -24,3 +24,8 @@ def question_answer(inp: Dict[str, Union[str, List[str], int]]) -> Dict[str, str
         'prompt': PROMPT_FORMAT.format(query=query),
         'response': inp['choices'][inp['gold']],
     }
+
+composer_dict = {
+    "piqa": question_answer,
+    "commonsense_qa": multiple_choice,
+}

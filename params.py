@@ -15,6 +15,7 @@ def parse_args():
     parser.add_argument('--save_strategy', type=str, default='steps')
     parser.add_argument('--report_to', type=str, default='none')
     parser.add_argument('--do_train_eval', type=int, default=0)
+    parser.add_argument('--save_dir', type=str, default=None)
 
     return parser
 

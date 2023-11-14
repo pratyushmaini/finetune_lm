@@ -32,21 +32,22 @@ def process_data_to_model_inputs(tokenizer):
     return tokenize_function
 
 
-def load_data(file_path):
+def load_data(file_path, data_composer):
     with open(file_path, 'r') as f:
         lines = f.readlines()
         data = [json.loads(line) for line in lines]
 
     processed_data = {"prompt": [], "response": []}
     for row in data:
-        mc_data = multiple_choice(row)
+        mc_data = data_composer(row)
         processed_data["prompt"].append(mc_data["prompt"])
         processed_data["response"].append(mc_data["response"])
     return processed_data
 
 def my_trainer(args):
     file_path = f"datasets/{args.dataset}/train.jsonl"
-    raw_data = load_data(file_path)
+    data_composer = composer_dict[args.dataset]
+    raw_data = load_data(file_path, data_composer)
     dataset = Dataset.from_dict(raw_data)
 
     # Load tokenizer and model
@@ -73,7 +74,9 @@ def my_trainer(args):
     print(f"Logging steps: {args.logging_steps}")
 
     #output log and save dir paths
-    output_dir = f"models/{args.dataset}"
+    if args.save_dir is None:
+        args.save_dir = args.dataset
+    output_dir = f"models/{args.save_dir}
 
     print(f"Output dir: {output_dir}")
 
