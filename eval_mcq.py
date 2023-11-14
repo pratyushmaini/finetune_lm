@@ -1,22 +1,10 @@
 import json
-from typing import Dict, List, Union
+from composer import *
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 from tqdm import tqdm
 
-def multiple_choice(inp: Dict[str, Union[str, List[str], int]]) -> Dict[str, str]:
-    PROMPT_FORMAT = '{query}\nOptions:{options}\nAnswer: '
-    options = ''
-    assert isinstance(inp['choices'], List)
-    for option in inp['choices']:
-        options += f'\n - {option}'
-    query = inp['query']
 
-    assert isinstance(inp['gold'], int)
-    return {
-        'prompt': PROMPT_FORMAT.format(query=query, options=options),
-        'response': inp['choices'][inp['gold']],
-    }
 
 def load_model(model_path):
     model = AutoModelForCausalLM.from_pretrained(model_path)
@@ -52,7 +40,8 @@ def get_model_predictions(model, tokenizer, formatted_questions, num_question_to
     labels[labels == tokenizer.pad_token_id] = -100
     for i in range(len(num_question_tokens)):
         labels[i, :num_question_tokens[i]] = -100
-
+    
+    # import ipdb; ipdb.set_trace()
     losses = loss_fct(shifted_logits.view(-1, shifted_logits.size(-1)), labels.view(-1))
     losses = losses.view(-1, inputs['input_ids'].size(1) - 1).sum(-1)
     #divide by number of non -100 labels
@@ -69,20 +58,25 @@ def evaluate_mcq(model_path, data_path, batch_size = 32):
     for i in range(0, len(questions), batch_size):
         question_batch = questions[i:i+batch_size]
         formatted_questions_batch = []
-        num_question_tokens = []
+        num_question_tokens_batch = []
         #assert number of choices is same for all questions
         for question in question_batch:
             mc_data = multiple_choice(question)
             formatted_questions = [
                 mc_data['prompt'] + question['choices'][i] for i in range(len(question['choices']))
             ]
-            num_question_tokens.append(len(tokenizer.tokenize(mc_data['prompt'])) - 1)
+            num_question_tokens = (len(tokenizer.tokenize(mc_data['prompt'])) - 1)
+            num_question_tokens_batch.extend([num_question_tokens]*len(question['choices']))
             formatted_questions_batch += formatted_questions
-        normalized_losses, losses = get_model_predictions(model, tokenizer, formatted_questions_batch, num_question_tokens)
+        normalized_losses, losses = get_model_predictions(model, tokenizer, formatted_questions_batch, num_question_tokens_batch)
         
         num_choices_seen = 0
-        # import ipdb; ipdb.set_trace()
+        
         for question in question_batch:
+            # prompt = multiple_choice(question)['prompt']
+            # input_ids = tokenizer(prompt, return_tensors='pt').input_ids.cuda()
+            # out = model.generate(input_ids, do_sample = False, max_new_tokens = 200)
+            # text_out = tokenizer.batch_decode(out)
             choices_in_question = len(question['choices'])
             normalized_loss = normalized_losses[num_choices_seen:num_choices_seen+choices_in_question]
             loss = losses[num_choices_seen:num_choices_seen+choices_in_question]
@@ -96,8 +90,9 @@ def evaluate_mcq(model_path, data_path, batch_size = 32):
 
         # display accuracy and normalized accuracy on tqdm using pbar to 4 floats
         pbar.update(batch_size)
+        n_ex = i + len(question_batch)
         pbar.set_description(
-            f'accuracy: {correct / (i + batch_size):.4f}, normalized accuracy: {correct_normalized / (i + batch_size):.4f}'
+            f'accuracy: {correct / n_ex:.4f}, normalized accuracy: {correct_normalized / n_ex:.4f}'
         )
 
     accuracy = correct / len(questions)
@@ -109,7 +104,7 @@ if __name__ == "__main__":
     path = "gpt2-medium"
     import sys
     dataset = sys.argv[1]
-    path = f"models/{dataset}/checkpoint-1622"
-    model_accuracy = evaluate_mcq(path, f"datasets/{dataset}/val.jsonl")
+    path = f"models/{dataset}"
+    model_accuracy = evaluate_mcq(path, f"datasets/{dataset}/train.jsonl")
     print(f"Model Accuracy: {model_accuracy}")
 

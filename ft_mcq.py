@@ -2,6 +2,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingA
 from datasets import Dataset
 import json, torch
 from params import parse_args
+from composer import *
 
 def process_data_to_model_inputs(tokenizer):
     def tokenize_function(batch):
@@ -37,7 +38,6 @@ def load_data(file_path):
         data = [json.loads(line) for line in lines]
 
     processed_data = {"prompt": [], "response": []}
-    from eval_mcq import multiple_choice
     for row in data:
         mc_data = multiple_choice(row)
         processed_data["prompt"].append(mc_data["prompt"])
@@ -65,10 +65,17 @@ def my_trainer(args):
     #save at every 1/5 of total steps
     num_steps = len(tokenized_dataset) // args.total_batch_size * args.num_epochs
     save_steps = num_steps // args.num_save_steps
-    warmup_steps = num_steps // args.warmup_ratio
+    warmup_steps = int(num_steps * args.warmup_ratio)
+
+    print(f"Total number of steps: {num_steps}")
+    print(f"Save steps: {save_steps}")
+    print(f"Warmup steps: {warmup_steps}")
+    print(f"Logging steps: {args.logging_steps}")
 
     #output log and save dir paths
     output_dir = f"models/{args.dataset}"
+
+    print(f"Output dir: {output_dir}")
 
 
     # Training arguments
