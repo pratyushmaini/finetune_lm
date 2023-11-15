@@ -26,7 +26,10 @@ def process_data_to_model_inputs(tokenizer):
         # assert real_labels == real_responses, "labels and responses don't match"
 
         #assert that shape of inputs["input_ids"] is **1024
-        assert len(inputs["input_ids"][0]) == 1024, "input_ids not of length 1024"
+        try:
+            assert len(inputs["input_ids"][0]) == 1024, "input_ids not of length 1024"
+        except:
+            import ipdb; ipdb.set_trace()
 
         # import ipdb; ipdb.set_trace()
     
@@ -52,7 +55,7 @@ def my_trainer(args):
     raw_data = load_data(file_path, data_composer)
     dataset = Dataset.from_dict(raw_data)
 
-    val_dataset = Dataset.from_dict(load_data(f"datasets/{args.dataset}/val.jsonl", data_composer))
+    val_dataset = Dataset.from_dict(load_data(f"datasets/{args.dataset}/validation.jsonl", data_composer))
 
     # Load tokenizer and model
     tokenizer = AutoTokenizer.from_pretrained(args.model_path)

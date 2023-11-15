@@ -110,6 +110,6 @@ if __name__ == "__main__":
         model_accuracy = evaluate_mcq(path, f"datasets/{dataset}/train.jsonl", data_composer, batch_size=args.total_batch_size)
         print(f"Model Accuracy on Train: {model_accuracy}")
     
-    model_accuracy = evaluate_mcq(path, f"datasets/{dataset}/val.jsonl", data_composer, batch_size=args.total_batch_size)
+    model_accuracy = evaluate_mcq(path, f"datasets/{dataset}/validation.jsonl", data_composer, batch_size=args.total_batch_size)
     print(f"Model Accuracy on Val: {model_accuracy}")
 

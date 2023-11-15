@@ -28,4 +28,7 @@ def question_answer(inp: Dict[str, Union[str, List[str], int]]) -> Dict[str, str
 composer_dict = {
     "piqa": question_answer,
     "commonsense_qa": multiple_choice,
+    "arc_easy": multiple_choice,
+    "trivia_qa": multiple_choice,
+    
 }
