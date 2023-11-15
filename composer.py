@@ -29,10 +29,20 @@ def question_answer(inp: Dict[str, Union[str, List[str], int]]) -> Dict[str, str
         'response': f" {inp['choices'][inp['gold']]}",
     }
 
+def question_answer_match(inp: Dict[str, Union[str, List[str], int]]) -> Dict[str, str]:
+    PROMPT_FORMAT = 'Question: {query}\nAnswer:'
+    query = inp['query']
+
+    return {
+        'prompt': PROMPT_FORMAT.format(query=query),
+        'response': f" {inp['answer']}",
+    }
+
 composer_dict = {
     "piqa": question_answer,
     "commonsense_qa": question_answer,
     "arc_easy": question_answer,
     "trivia_qa": question_answer,
+    "gsm8k": question_answer_match,
 
 }

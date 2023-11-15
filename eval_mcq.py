@@ -13,9 +13,12 @@ def load_model(model_path):
         tokenizer = AutoTokenizer.from_pretrained(model_path)
     except:
         tokenizer = AutoTokenizer.from_pretrained("gpt2-medium")
+    
     if tokenizer.pad_token_id is None:
         print("Setting pad token id to eos token id")
         tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+        tokenizer.padding_side = "left"
 
     model = model.cuda()    
 

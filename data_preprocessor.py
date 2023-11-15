@@ -108,12 +108,30 @@ def trivia_qa_preprocess():
         jsonl_dict[split] = jsonl
     return jsonl_dict
 
+def gsm8k_preprocess():
+    dataset = load_dataset("gsm8k", "main", streaming=True)
+    jsonl_dict = {}
+    for split in ["train", "test"]:
+        jsonl = []
+        current_dataset = dataset[split]
+        for row in tqdm(current_dataset):
+            question = row["question"]
+            answerKey = row["answer"]
+            jsonl_record = {
+                "query": f"{question}",
+                "answer": answerKey
+            }
+            jsonl.append(jsonl_record)
+        jsonl_dict[split] = jsonl
+    return jsonl_dict
+
 preprocess_func = {
     # mcq datasets
     "commonsense_qa": commonsense_qa_preprocess,   
     "piqa": piqa_preprocess,
     "arc_easy": arc_easy_preprocess,
     "trivia_qa": trivia_qa_preprocess,
+    "gsm8k": gsm8k_preprocess,
 }
 
 def get_dataset(dataset_name):
@@ -130,7 +148,7 @@ def get_dataset(dataset_name):
     return jsonl 
 
 if __name__ == "__main__":
-    get_dataset("piqa")
-    get_dataset("arc_easy")
-    get_dataset("trivia_qa")
-    get_dataset("commonsense_qa")
+    get_dataset("gsm8k")
+    # get_dataset("arc_easy")
+    # get_dataset("trivia_qa")
+    # get_dataset("commonsense_qa")
