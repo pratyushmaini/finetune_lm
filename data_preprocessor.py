@@ -9,9 +9,9 @@ from tqdm import tqdm
 # {"query": "Question: Which statement best explains why photosynthesis is the foundation of most food webs?\n", "gold": "Sunlight is the source of energy for nearly all ecosystems."}
 
 
-def commonsense_qa_preprocess(dataset_name):
+def commonsense_qa_preprocess():
     # {'id': '61fe6e879ff18686d7552425a36344c8', 'question': 'Sammy wanted to go to where the people were.  Where might he go?', 'question_concept': 'people', 'choices': {'label': ['A', 'B', 'C', 'D', 'E'], 'text': ['race track', 'populated areas', 'the desert', 'apartment', 'roadblock']}, 'answerKey': 'B'}
-    dataset = load_dataset(dataset_name, streaming=True)
+    dataset = load_dataset("commonsense_qa", streaming=True)
     jsonl_dict = {}
     for split in ["train", "validation"]:
         jsonl = []
@@ -24,7 +24,7 @@ def commonsense_qa_preprocess(dataset_name):
             answerKey = row["choices"]["label"].index(answerKey)
             jsonl_record = {
                 "choices": choices,
-                "query": f"Question: {question}\n",
+                "query": f"{question}",
                 "gold": answerKey
             }
             jsonl.append(jsonl_record)
@@ -32,9 +32,9 @@ def commonsense_qa_preprocess(dataset_name):
     return jsonl_dict
 
 
-def piqa_preprocess(dataset_name):
+def piqa_preprocess():
     # {'goal': 'to be a good student', 'sol1': 'study hard', 'sol2': 'play video games', 'label': 0}
-    dataset = load_dataset(dataset_name, streaming=True)
+    dataset = load_dataset("piqa", streaming=True)
     jsonl_dict = {}
     for split in ["train", "validation"]:
         jsonl = []
@@ -45,7 +45,7 @@ def piqa_preprocess(dataset_name):
             answerKey = row["label"]
             jsonl_record = {
                 "choices": choices,
-                "query": f"Question: {question}\n",
+                "query": f"{question}",
                 "gold": answerKey
             }
             jsonl.append(jsonl_record)
@@ -71,7 +71,7 @@ def arc_easy_preprocess():
             answerKey = row["choices"]["label"].index(answerKey)
             jsonl_record = {
                 "choices": choices,
-                "query": f"Question: {question}\n",
+                "query": f"{question}",
                 "gold": answerKey
             }
             jsonl.append(jsonl_record)
@@ -83,7 +83,7 @@ def arc_easy_preprocess():
 def trivia_qa_preprocess():
     dataset = load_dataset("trivia_qa", "rc.nocontext", streaming=True)
     jsonl_dict = {}
-    for split in ["train", "validation", "test"]:
+    for split in ["train", "validation"]:
         jsonl = []
         current_dataset = dataset[split]
         num_samples = 0
@@ -97,7 +97,7 @@ def trivia_qa_preprocess():
             answerKey = choices.index(answerKey_str)
             jsonl_record = {
                 "choices": choices,
-                "query": f"Question: {question}\n",
+                "query": f"{question}",
                 "gold": answerKey
             }
             jsonl.append(jsonl_record)
@@ -130,4 +130,7 @@ def get_dataset(dataset_name):
     return jsonl 
 
 if __name__ == "__main__":
+    get_dataset("piqa")
+    get_dataset("arc_easy")
     get_dataset("trivia_qa")
+    get_dataset("commonsense_qa")

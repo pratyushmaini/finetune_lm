@@ -63,7 +63,7 @@ def evaluate_mcq(model_path, data_path, data_composer, batch_size = 32):
         for question in question_batch:
             mc_data = data_composer(question)
             formatted_questions = [
-                mc_data['prompt'] + question['choices'][i] for i in range(len(question['choices']))
+                mc_data['prompt'] + " " + question['choices'][i] for i in range(len(question['choices']))
             ]
             num_question_tokens = (len(tokenizer.tokenize(mc_data['prompt'])) - 1)
             num_question_tokens_batch.extend([num_question_tokens]*len(question['choices']))
