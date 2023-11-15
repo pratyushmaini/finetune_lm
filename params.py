@@ -16,6 +16,7 @@ def parse_args():
     parser.add_argument('--report_to', type=str, default='none')
     parser.add_argument('--do_train_eval', type=int, default=0)
     parser.add_argument('--save_dir', type=str, default=None)
+    parser.add_argument('--n_shot', type=int, default=None)
 
     return parser
 

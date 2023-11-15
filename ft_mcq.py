@@ -69,6 +69,8 @@ def my_trainer(args):
 
     #take only first 100 examples from validation set
     tokenized_val_dataset = tokenized_val_dataset.select(range(100))
+    if args.n_shot is not None:
+        tokenized_dataset = tokenized_dataset.select(range(args.n_shot))
 
     num_devices = torch.cuda.device_count()
     assert args.total_batch_size % num_devices == 0, "Batch size not divisible by number of devices"
